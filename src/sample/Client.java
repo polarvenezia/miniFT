@@ -50,7 +50,15 @@ public class Client {
         X509Certificate CAcert;
 
 
-        output_message.write("I: Hello SecStore, please prove your identity!".getBytes());
+        final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        int len = 20;
+        StringBuilder sb = new StringBuilder( len );
+        SecureRandom rnd = new SecureRandom();
+        for( int i = 0; i < len; i++ )
+            sb.append( AB.charAt( rnd.nextInt(AB.length()) ) );
+
+        output_message.write(sb.toString().getBytes());
+
         // 1. encrypted message, TODO: store somewhere as byte[]. Check
         byte[] buffer = new byte[1024];
         String greeting;
