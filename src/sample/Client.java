@@ -149,8 +149,15 @@ public class Client {
                 long encryptedLength = fileData.length;
                 output_message.write(longToBytes(encryptedLength));
 
+                byte[] encrypted_message;
                 while (start_pos < fileData.length){
-                    byte[] encrypted_message = rsaCipher.doFinal(fileData,start_pos,116);
+
+                    rsaCipher.init(Cipher.ENCRYPT_MODE, serverPublicKey);
+                    if (fileData.length - start_pos < 116){
+                        encrypted_message = rsaCipher.doFinal(fileData,start_pos,fileData.length - start_pos);
+                    } else {
+                        encrypted_message = rsaCipher.doFinal(fileData,start_pos,116);
+                    }
                     start_pos += 116;
                     output_message.write(encrypted_message);
                     System.out.println("------------sent encrypted message: " + encrypted_message);
