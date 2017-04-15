@@ -125,24 +125,31 @@ public class FTServer {
                 long size = bytesToLong(sizeBuffer, 8);
                 System.out.println("File size is: " + size);
                 long hasRead = 0;
-                byte[] encryptedFile = new byte[(int) size]; // here has a restriction of file size with maximum 2GB
+                byte[] receivedFile = new byte[(int) size]; // here has a restriction of file size with maximum 2GB
 
                 System.out.println("reading file into memory...");
-                int pointer = 0;
-                while (hasRead < size && (length = inputStream.read(buffer)) > 0){
-                    hasRead += length;
-                    System.out.println(length);
-                    System.arraycopy(buffer, 0, encryptedFile, pointer, length);
-                    pointer += length;
-                }
 
                 System.out.println("writing file...");
                 if (policy == CP1) {
-                    byte[] decryptedFile = rsaCipher.doFinal(encryptedFile);
-                    System.out.println(new String(decryptedFile));
-                    outputStreamWriter.write(decryptedFile);
+                    int start = 0;
+                    byte[] rsaBuffer = new byte[116];
+                    while (start < size){
+                        inputStream.read(rsaBuffer);
+                        byte[] decryptedFile = rsaCipher.doFinal(rsaBuffer);
+                        System.arraycopy(decryptedFile, 0, receivedFile, start, decryptedFile.length);
+                        start += decryptedFile.length;
+                    }
+                    System.out.println(new String(receivedFile));
+                    outputStreamWriter.write(receivedFile);
                 }else if (policy == CP2){
-                    byte[] decryptedFile = aesCipher.doFinal(encryptedFile);
+                    int pointer = 0;
+                    while (hasRead < size && (length = inputStream.read(buffer)) > 0){
+                        hasRead += length;
+                        System.out.println(length);
+                        System.arraycopy(buffer, 0, receivedFile, pointer, length);
+                        pointer += length;
+                    }
+                    byte[] decryptedFile = aesCipher.doFinal(receivedFile);
                     System.out.println(new String(decryptedFile));
                     outputStreamWriter.write(decryptedFile);
                 }
