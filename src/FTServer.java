@@ -132,9 +132,11 @@ public class FTServer {
                 System.out.println("writing file...");
                 if (policy == CP1) {
                     int start = 0;
-                    byte[] rsaBuffer = new byte[116];
+                    byte[] rsaBuffer = new byte[128];
                     while (start < size){
-                        inputStream.read(rsaBuffer);
+                        rsaCipher.init(Cipher.DECRYPT_MODE, privateKey);
+                        length = inputStream.read(rsaBuffer);
+                        System.out.println(length);
                         byte[] decryptedFile = rsaCipher.doFinal(rsaBuffer);
                         System.arraycopy(decryptedFile, 0, receivedFile, start, decryptedFile.length);
                         start += decryptedFile.length;
