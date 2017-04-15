@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Base64;
 
 /**
@@ -141,15 +142,22 @@ public class Client {
 
                 // TODO: encrypted messagge with CP private key
                 rsaCipher.init(Cipher.ENCRYPT_MODE, serverPublicKey);
-                byte[] encrypted_message = rsaCipher.doFinal(fileData);
+                int start_pos = 0;
 
-
-                // TODO: send encrypted message and encrypted public key
-                System.out.println("line 128:"+encrypted_message.length);
-                long encryptedLength = encrypted_message.length;
+                // TODO: send encrypted message length
+                System.out.println("line 128: origin file length "+fileData.length);
+                long encryptedLength = fileData.length;
                 output_message.write(longToBytes(encryptedLength));
-                output_message.write(encrypted_message);
-                System.out.println("------------sent encrypted message: " + encrypted_message);
+
+                while (start_pos < fileData.length){
+                    byte[] encrypted_message = rsaCipher.doFinal(fileData,start_pos,116);
+                    start_pos += 116;
+                    output_message.write(encrypted_message);
+                    System.out.println("------------sent encrypted message: " + encrypted_message);
+                }
+
+
+
 
             }else {// CP2
                 System.out.println("CP2");
