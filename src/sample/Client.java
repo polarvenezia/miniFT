@@ -124,15 +124,10 @@ public class Client {
             // String server_intput = input_message.readLine();
             String sending_file_name = sending_file.getName();
             System.out.println("------------sent file name: " + sending_file_name);
-//            String data = "";
-//            String line;
-//            BufferedReader bufferedReader = new BufferedReader( new FileReader(sending_file_name));
-//            while((line= bufferedReader.readLine())!=null){data = data +"\n" + line;}
 
             byte[] fileData = new byte[(int) sending_file.length()];
             FileInputStream fileStream = new FileInputStream(sending_file);
             while ((length = fileStream.read(fileData)) > -1){
-                System.out.println(length);
             }
             // =======================encrypte file message ===================
             // TODO: encrypted your upload with CP
@@ -168,7 +163,7 @@ public class Client {
                     }
                     start_pos += 116;
                     output_message.write(encrypted_message);
-                    System.out.println("------------sent encrypted message: " + encrypted_message);
+//                    System.out.println("------------sent encrypted message: " + encrypted_message);
                 }
 
 
@@ -205,7 +200,6 @@ public class Client {
                     output_message.write(longToBytes(encrypted_message_byte.length));
 
                     output_message.write(encrypted_message_byte);
-                    System.out.println("------------sent encrypted message: " + encrypted_message);
 
                 }catch (Exception e) {
                     System.out.println("Error while encrypting: " + e.toString());
@@ -220,6 +214,7 @@ public class Client {
             output_message.flush();
         }
         serverInput.close();
+        output_message.close();
         echoSocket.close();
         input_message.close();
         stdIn.close();

@@ -63,7 +63,6 @@ public class FTServer {
                 System.out.println("client connected!");
                 InputStream serverc = new FileInputStream(serverCertFile);
                 InputStream inputStream = socket.getInputStream();
-                PrintWriter printWriter = new PrintWriter(socket.getOutputStream(), true);
                 OutputStream outputStream = socket.getOutputStream();
                 byte[] buffer = new byte[1024];
                 int length;
@@ -101,7 +100,7 @@ public class FTServer {
                 length = inputStream.read(buffer);
                 String filename = new String(buffer, 0, length);
                 System.out.println("filename: "+filename);
-                File file = new File("server"+filename);
+                File file = new File(filename);
                 OutputStream outputStreamWriter = new FileOutputStream(file);
                 outputStream.write(intToBytes(SEND_FILE));
 
@@ -136,7 +135,6 @@ public class FTServer {
                     while (start < size){
                         rsaCipher.init(Cipher.DECRYPT_MODE, privateKey);
                         length = inputStream.read(rsaBuffer);
-                        System.out.println(length);
                         byte[] decryptedFile = rsaCipher.doFinal(rsaBuffer);
                         System.arraycopy(decryptedFile, 0, receivedFile, start, decryptedFile.length);
                         start += decryptedFile.length;
@@ -152,14 +150,12 @@ public class FTServer {
                         pointer += length;
                     }
                     byte[] decryptedFile = aesCipher.doFinal(receivedFile);
-                    System.out.println(new String(decryptedFile));
                     outputStreamWriter.write(decryptedFile);
                 }
 
                 System.out.println("file transfer finished");
                 outputStream.write(SUCCESS);
                 inputStream.close();
-                printWriter.close();
                 outputStreamWriter.close();
                 socket.close();
             }catch (Exception e){
