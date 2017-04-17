@@ -28,6 +28,10 @@ public class Client {
 //        sendFile(file, hostName);
 //    }
 
+    public static void log(String msg){
+        Main.logstatus.appendText(msg);
+    }
+
     public static void sendFile(File sending_file, String serverAddress) throws Exception{
         // ====================configure server =========================
         int portNumber = 8080;
@@ -42,7 +46,6 @@ public class Client {
         System.out.println("---------------------client figured successfully");
 
         // ====================start to check authentication ====================
-        boolean trust_server = false;
         // TODO: store the received certificate somewhere by fis, update in line 42
         InputStream fis;
         // create certificate object
@@ -61,14 +64,7 @@ public class Client {
 
         // 1. encrypted message, TODO: store somewhere as byte[]. Check
         byte[] buffer = new byte[1024];
-        String greeting;
-//        while (!(greeting = input_message.readLine()).equals("done")) {
-//            System.out.println(greeting);
-//            finalGreeting += greeting;
-//        }
         int length = serverInput.read(buffer);
-        greeting = new String(buffer, 0, length);
-        System.out.println("Server: " + greeting);
         System.out.println("finish greeting");
         byte[] greeing_in_byte = new byte[length];
         System.arraycopy(buffer, 0, greeing_in_byte, 0, length);
@@ -82,8 +78,9 @@ public class Client {
         try{
             FileWriter fw = new FileWriter(file_name);
             BufferedWriter bw = new BufferedWriter(fw);
-            length = serverInput.read(buffer);
-            long size = bytesToLong(buffer, length);
+            byte[] sizeBuffer = new byte[8];
+            length = serverInput.read(sizeBuffer);
+            long size = bytesToLong(sizeBuffer, length);
             long hasRead = 0;
             while (hasRead < size && (length = serverInput.read(buffer)) > 0){
                 hasRead += length;
@@ -133,14 +130,12 @@ public class Client {
             // TODO: encrypted your upload with CP
 
             if (CP1){
-                System.out.println("CP1");
-                output_message.write(intToBytes(CP1INT));
+                System.out.println("Using encryption protocol CP1");
+                output_message.write(CP1INT);
 
                 output_message.write(sending_file_name.getBytes()); // send file name
 
-                byte[] sendFileBuffer = new byte[4];
-                serverInput.read(sendFileBuffer);
-                int sendFileAction = bytesToInt(sendFileBuffer);
+                int sendFileAction = serverInput.read();
                 if (sendFileAction == SEND_FILE) System.out.println("Server received file name successfully");
 
                 // TODO: encrypted messagge with CP private key
@@ -148,7 +143,7 @@ public class Client {
                 int start_pos = 0;
 
                 // TODO: send encrypted message length
-                System.out.println("line 128: origin file length "+fileData.length);
+                System.out.println("Origin file length "+fileData.length);
                 long encryptedLength = fileData.length;
                 output_message.write(longToBytes(encryptedLength));
 
@@ -165,19 +160,13 @@ public class Client {
                     output_message.write(encrypted_message);
 //                    System.out.println("------------sent encrypted message: " + encrypted_message);
                 }
-
-
-
-
             }else {// CP2
-                System.out.println("CP2");
+                System.out.println("Using encryption protocol CP2");
                 // TODO: create message digest and symmetric key, and let server know
-                output_message.write(intToBytes(CP2INT));
+                output_message.write(CP2INT);
                 output_message.write(sending_file_name.getBytes()); // send file name
 
-                byte[] sendFileBuffer = new byte[4];
-                serverInput.read(sendFileBuffer);
-                int sendFileAction = bytesToInt(sendFileBuffer);
+                int sendFileAction = serverInput.read();
                 if (sendFileAction == SEND_FILE) System.out.println("Server received file name successfully");
                 // encrypt message
 
@@ -192,11 +181,11 @@ public class Client {
 
                     // TODO: encrypt message with symmetric key
                     byte[] encrypted_message_byte = cipher.doFinal(fileData);
-                    String encrypted_message =  Base64.getEncoder().encodeToString(encrypted_message_byte);
 
                     // TODO: send secret message and encrypted_message in byte array
                     output_message.write(encrypted_key);
                     int keyStatus = serverInput.read();
+                    if (keyStatus == SUCCESS) System.out.println("server received key successfully");
                     output_message.write(longToBytes(encrypted_message_byte.length));
 
                     output_message.write(encrypted_message_byte);

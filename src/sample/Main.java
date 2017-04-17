@@ -19,6 +19,7 @@ import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,7 +32,7 @@ public class Main extends Application {
     File toUpload;
     BorderPane border;
     String centerPane = "";
-    TextArea logstatus;
+    static TextArea logstatus = new TextArea("Status: \nWelcome to miniFTP client!\n");
     TextArea traceRouteLog = new TextArea();
 
     @Override
@@ -44,6 +45,10 @@ public class Main extends Application {
         traceRouteLog.setWrapText(true);
         traceRouteLog.setEditable(false);
         traceRouteLog.appendText("Diagnosis log: \n");
+
+        System.setOut(new PrintStream(new LogOutputStream(logstatus)));
+        System.setErr(new PrintStream(new LogOutputStream(logstatus)));
+
         Scene scene = new Scene(border, 500, 400);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -52,14 +57,6 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
-    }
-
-    public MenuButton addMenu(){
-        MenuButton menuButton = new MenuButton();
-        menuButton.getPopupSide();
-        menuButton.getItems().addAll(Stream.of(SEND_FILE, TRACE_ROUTE,
-                DIAGNOSIS, SETTINGS, HELP).map(MenuItem::new).collect(Collectors.toList()));
-        return menuButton;
     }
 
     public StackPane addTraceRouteLog(){
@@ -311,7 +308,6 @@ public class Main extends Application {
     public StackPane addStatusRegion(){
         StackPane stackPane = new StackPane();
         stackPane.setPadding(new Insets(5, 10, 2, 10));
-        logstatus = new TextArea("Status: \nWelcome to miniFTP client!\n");
         logstatus.setPrefHeight(100);
         logstatus.setEditable(false);
         stackPane.setPadding(new Insets(0, 5, 5, 5));

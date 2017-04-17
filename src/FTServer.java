@@ -91,9 +91,7 @@ public class FTServer {
                 // TCP connected successfully
                 // TODO: TCP file transfer handling
                 System.out.println("waiting for socket encryption policy...");
-                byte[] policybuffer = new byte[4];
-                inputStream.read(policybuffer);
-                int policy = ByteBuffer.wrap(policybuffer).getInt();
+                int policy = inputStream.read();
                 System.out.println("client wants to use policy "+policy);
 
                 System.out.println("waiting for socket filename...");
@@ -102,7 +100,7 @@ public class FTServer {
                 System.out.println("filename: "+filename);
                 File file = new File(filename);
                 OutputStream outputStreamWriter = new FileOutputStream(file);
-                outputStream.write(intToBytes(SEND_FILE));
+                outputStream.write(SEND_FILE);
 
                 rsaCipher.init(Cipher.DECRYPT_MODE, privateKey);
                 Cipher aesCipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
@@ -134,7 +132,7 @@ public class FTServer {
                     byte[] rsaBuffer = new byte[128];
                     while (start < size){
                         rsaCipher.init(Cipher.DECRYPT_MODE, privateKey);
-                        length = inputStream.read(rsaBuffer);
+                        inputStream.read(rsaBuffer);
                         byte[] decryptedFile = rsaCipher.doFinal(rsaBuffer);
                         System.arraycopy(decryptedFile, 0, receivedFile, start, decryptedFile.length);
                         start += decryptedFile.length;
