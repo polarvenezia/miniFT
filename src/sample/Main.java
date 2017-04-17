@@ -49,7 +49,7 @@ public class Main extends Application {
         System.setOut(new PrintStream(new LogOutputStream(logstatus)));
         System.setErr(new PrintStream(new LogOutputStream(logstatus)));
 
-        Scene scene = new Scene(border, 500, 400);
+        Scene scene = new Scene(border, 550, 450);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -308,7 +308,8 @@ public class Main extends Application {
     public StackPane addStatusRegion(){
         StackPane stackPane = new StackPane();
         stackPane.setPadding(new Insets(5, 10, 2, 10));
-        logstatus.setPrefHeight(100);
+//        logstatus.setPrefHeight(100);
+        logstatus.minHeightProperty().bind(border.heightProperty().divide(4));
         logstatus.setEditable(false);
         stackPane.setPadding(new Insets(0, 5, 5, 5));
         stackPane.getChildren().add(logstatus);
