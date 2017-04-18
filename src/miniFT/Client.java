@@ -21,8 +21,8 @@ public class Client {
     private static final int SUCCESS = 111;
 
 //    public static void main(String[] args) throws Exception {
-//        File file = new File("test.txt");
-//        String hostName = "localhost";
+//        File file = new File(args[0]);
+//        String hostName = args[1];
 //        sendFile(file, hostName);
 //    }
 
@@ -136,6 +136,9 @@ public class Client {
                 int sendFileAction = serverInput.read();
                 if (sendFileAction == SEND_FILE) System.out.println("Server received file name successfully");
 
+                // start time
+                long time = System.currentTimeMillis();
+
                 // TODO: encrypted messagge with CP private key
                 rsaCipher.init(Cipher.ENCRYPT_MODE, serverPublicKey);
                 int start_pos = 0;
@@ -158,6 +161,8 @@ public class Client {
                     output_message.write(encrypted_message);
 //                    System.out.println("------------sent encrypted message: " + encrypted_message);
                 }
+                time = System.currentTimeMillis() - time;
+                System.out.println("total time: "+ time + " ms");
             }else {// CP2
                 System.out.println("Using encryption protocol CP2");
                 // TODO: create message digest and symmetric key, and let server know
@@ -168,6 +173,7 @@ public class Client {
                 if (sendFileAction == SEND_FILE) System.out.println("Server received file name successfully");
                 // encrypt message
 
+                long time = System.currentTimeMillis();
                 try { // how AES work
                     KeyGenerator keyGen = KeyGenerator.getInstance("AES");
                     SecretKey key = keyGen.generateKey();
@@ -187,6 +193,8 @@ public class Client {
                     output_message.write(longToBytes(encrypted_message_byte.length));
 
                     output_message.write(encrypted_message_byte);
+                    time = System.currentTimeMillis() - time;
+                    System.out.println("total time: "+ time + " ms");
 
                 }catch (Exception e) {
                     System.out.println("Error while encrypting: " + e.toString());
