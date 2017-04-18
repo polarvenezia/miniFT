@@ -21,7 +21,7 @@ public class Client {
     private static final int SUCCESS = 111;
 
 //    public static void main(String[] args) throws Exception {
-//        File file = new File("test.txt");
+//        File file = new File("F:\\term5\\50.005\\week11\\NSProjectRelease\\sampleData\\smallFile.txt");
 //        String hostName = "localhost";
 //        sendFile(file, hostName);
 //    }
