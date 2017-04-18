@@ -79,12 +79,6 @@ public class Main extends Application {
                 new Hyperlink(SETTINGS),
                 new Hyperlink(HELP)};
 
-//        Button options[] = new Button[] {
-//                new Button(SEND_FILE),
-//                new Button(TRACE_ROUTE),
-//                new Button(DIAGNOSIS),
-//                new Button(SETTINGS),
-//                new Button(HELP)};
         options[0].setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
