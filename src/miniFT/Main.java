@@ -50,6 +50,8 @@ public class Main extends Application {
         Scene scene = new Scene(border, 550, 450);
         primaryStage.setScene(scene);
         primaryStage.show();
+
+
     }
 
 
@@ -144,7 +146,8 @@ public class Main extends Application {
                     }
                     logstatus.appendText("Sending file to "+serverAddress+" ... \n");
                     try {
-                        Client.sendFile(toUpload, serverAddress);
+                        Runnable my_client_runnable = new MyThread(serverAddress );
+                        new Thread(my_client_runnable).run();
                     }catch (Exception e){
                         logstatus.appendText(e.getMessage());
                     }
@@ -307,5 +310,22 @@ public class Main extends Application {
         stackPane.getChildren().add(logstatus);
         stackPane.setAlignment(Pos.CENTER);
         return stackPane;
+    }
+
+
+    public class MyThread implements Runnable {
+        String serverAddress;
+        public MyThread(String address) {
+            serverAddress = address;
+        }
+
+        public void run() {
+            try{
+                Client.sendFile(toUpload, serverAddress);
+            }catch (Exception e){
+                System.out.println("exception when accessing client from thread");
+                e.printStackTrace();
+            }
+        }
     }
 }
