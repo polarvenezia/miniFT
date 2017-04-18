@@ -1,4 +1,4 @@
-package sample;
+package miniFT;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -9,8 +9,6 @@ import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Base64;
 
 /**
  * Created by ntjin on 4/9/2017.

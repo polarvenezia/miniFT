@@ -1,4 +1,4 @@
-package sample;
+package miniFT;
 
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -20,8 +20,6 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Main extends Application {
     private static final String SEND_FILE = "Send File";

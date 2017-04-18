@@ -1,4 +1,4 @@
-package sample;
+package miniFT;
 
 public class Controller {
 }

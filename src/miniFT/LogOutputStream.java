@@ -1,4 +1,4 @@
-package sample;
+package miniFT;
 
 import javafx.scene.control.TextArea;
 
