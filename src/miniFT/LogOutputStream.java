@@ -16,7 +16,11 @@ public class LogOutputStream extends OutputStream{
 
     @Override
     public void write(int b) throws IOException {
-        textArea.appendText(String.valueOf((char) b));
+        try {
+            javafx.application.Platform.runLater(() -> textArea.appendText(String.valueOf((char) b)));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void log(String msg){

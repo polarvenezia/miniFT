@@ -70,6 +70,7 @@ public class FTServer {
                 // TODO:Send identity message
                 System.out.println("waiting for socket identity message");
                 length = inputStream.read(buffer);
+                if (length == -1) throw new Exception("Socket closed");
                 Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
                 rsaCipher.init(Cipher.ENCRYPT_MODE, privateKey);
                 byte[] encrypted = rsaCipher.doFinal(buffer, 0, length);
@@ -79,6 +80,7 @@ public class FTServer {
                 // TODO: Send certificate signed by CA
                 System.out.println("waiting for socket request for ca");
                 length = inputStream.read(buffer);
+                if (length == -1) throw new Exception("Socket closed");
                 String caRequest = new String(buffer, 0, length);
                 if (caRequest.equals(CA_REQUEST)){
                     outputStream.write(longToBytes(serverCertFile.length()));
@@ -92,10 +94,12 @@ public class FTServer {
                 // TODO: TCP file transfer handling
                 System.out.println("waiting for socket encryption policy...");
                 int policy = inputStream.read();
+                if (policy == -1) throw new Exception("Socket closed");
                 System.out.println("client wants to use policy "+policy);
 
                 System.out.println("waiting for socket filename...");
                 length = inputStream.read(buffer);
+                if (length == -1) throw new Exception("Socket closed");
                 String filename = new String(buffer, 0, length);
                 System.out.println("filename: "+filename);
                 File file = new File(filename);
@@ -109,6 +113,7 @@ public class FTServer {
                 if (policy == CP2){
                     System.out.println("waiting for socket aes key...");
                     length = inputStream.read(buffer);
+                    if (length == -1) throw new Exception("Socket closed");
                     byte[] encryptedKey = new byte[length];
                     System.arraycopy(buffer, 0, encryptedKey, 0, length);
                     outputStream.write(SUCCESS);
@@ -118,6 +123,7 @@ public class FTServer {
                 }
                 byte[] sizeBuffer = new byte[8];
                 length = inputStream.read(sizeBuffer);
+                if (length == -1) throw new Exception("Socket closed");
                 if (length != 8) System.out.println("Wrong size of file");
                 long size = bytesToLong(sizeBuffer, 8);
                 System.out.println("File size is: " + size);
@@ -132,21 +138,21 @@ public class FTServer {
                     byte[] rsaBuffer = new byte[128];
                     while (start < size){
                         rsaCipher.init(Cipher.DECRYPT_MODE, privateKey);
-                        inputStream.read(rsaBuffer);
+                        length = inputStream.read(rsaBuffer);
+                        if (length == -1) throw new Exception("Socket closed");
                         byte[] decryptedFile = rsaCipher.doFinal(rsaBuffer);
                         System.arraycopy(decryptedFile, 0, receivedFile, start, decryptedFile.length);
                         start += decryptedFile.length;
                     }
-                    System.out.println(new String(receivedFile));
                     outputStreamWriter.write(receivedFile);
                 }else if (policy == CP2){
                     int pointer = 0;
-                    while (hasRead < size && (length = inputStream.read(buffer)) > 0){
+                    while (hasRead < size && (length = inputStream.read(buffer)) > -1){
                         hasRead += length;
-                        System.out.println(length);
                         System.arraycopy(buffer, 0, receivedFile, pointer, length);
                         pointer += length;
                     }
+                    if (length == -1) throw new Exception("Socket closed");
                     byte[] decryptedFile = aesCipher.doFinal(receivedFile);
                     outputStreamWriter.write(decryptedFile);
                 }
@@ -157,7 +163,7 @@ public class FTServer {
                 outputStreamWriter.close();
                 socket.close();
             }catch (Exception e){
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
         }
 

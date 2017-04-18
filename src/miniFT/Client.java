@@ -31,6 +31,7 @@ public class Client {
     }
 
     public static void sendFile(File sending_file, String serverAddress) throws Exception{
+        System.out.println("------------session starts");
         // ====================configure server =========================
         int portNumber = 8080;
         Socket echoSocket = new Socket(serverAddress, portNumber);
@@ -40,8 +41,6 @@ public class Client {
         // pass the result of user to server
         OutputStream output_message = echoSocket.getOutputStream();
         // get return result from server
-        BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("---------------------client figured successfully");
 
         // ====================start to check authentication ====================
         // TODO: store the received certificate somewhere by fis, update in line 42
@@ -50,7 +49,7 @@ public class Client {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         X509Certificate CAcert;
 
-
+        // generating random verification message
         final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         int len = 20;
         StringBuilder sb = new StringBuilder( len );
@@ -63,7 +62,6 @@ public class Client {
         // 1. encrypted message, TODO: store somewhere as byte[]. Check
         byte[] buffer = new byte[1024];
         int length = serverInput.read(buffer);
-        System.out.println("finish greeting");
         byte[] greeing_in_byte = new byte[length];
         System.arraycopy(buffer, 0, greeing_in_byte, 0, length);
 
@@ -103,27 +101,28 @@ public class Client {
             serverCert.checkValidity();
             serverCert.verify(publicKey);
 
-            System.out.println("---------------server is verified! Decrypt the message received just now");
-
+            System.out.println("Server public key received successfully");
             // Create RSA("RSA/ECB/PKCS1Padding") cipher object and initialize is as encrypt mode,
             // TODO: do we use ECB/PLCS1?
             PublicKey serverPublicKey = serverCert.getPublicKey();
             Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
             rsaCipher.init(Cipher.DECRYPT_MODE, serverPublicKey);
-            System.out.println(greeing_in_byte.length);
             byte[] decrypted_greeing= rsaCipher.doFinal(greeing_in_byte);
-            System.out.println("------------Encrypted result of greeting: "+ new String(decrypted_greeing));
-
+            System.out.println("Encrypted result of greeting: "+ new String(decrypted_greeing));
+            if (sb.toString().equals(new String(decrypted_greeing))){
+                System.out.println("server is verified!");
+            }else {
+                throw new Exception("Server is not verified");
+            }
             // =======================start messaging ===================
             // =================read file to transfer ===================
-            // String server_intput = input_message.readLine();
-            String sending_file_name = sending_file.getName();
-            System.out.println("------------sent file name: " + sending_file_name);
-
             byte[] fileData = new byte[(int) sending_file.length()];
             FileInputStream fileStream = new FileInputStream(sending_file);
             while ((length = fileStream.read(fileData)) > -1){
             }
+            String sending_file_name = sending_file.getName();
+            System.out.println("Sent file name: " + sending_file_name + "  size: "+fileData.length + " bytes");
+
             // =======================encrypte file message ===================
             // TODO: encrypted your upload with CP
 
@@ -135,16 +134,17 @@ public class Client {
 
                 int sendFileAction = serverInput.read();
                 if (sendFileAction == SEND_FILE) System.out.println("Server received file name successfully");
+                else throw new Exception("Server didn't receive file name");
 
                 // TODO: encrypted messagge with CP private key
                 rsaCipher.init(Cipher.ENCRYPT_MODE, serverPublicKey);
                 int start_pos = 0;
 
                 // TODO: send encrypted message length
-                System.out.println("Origin file length "+fileData.length);
                 long encryptedLength = fileData.length;
                 output_message.write(longToBytes(encryptedLength));
 
+                System.out.println("Sending file...");
                 byte[] encrypted_message;
                 while (start_pos < fileData.length){
 
@@ -166,8 +166,10 @@ public class Client {
 
                 int sendFileAction = serverInput.read();
                 if (sendFileAction == SEND_FILE) System.out.println("Server received file name successfully");
+                else throw new Exception("Server didn't receive file name");
                 // encrypt message
 
+                System.out.println("Sending file...");
                 try { // how AES work
                     KeyGenerator keyGen = KeyGenerator.getInstance("AES");
                     SecretKey key = keyGen.generateKey();
@@ -184,6 +186,7 @@ public class Client {
                     output_message.write(encrypted_key);
                     int keyStatus = serverInput.read();
                     if (keyStatus == SUCCESS) System.out.println("server received key successfully");
+                    else throw new Exception("server didn't receive the key");
                     output_message.write(longToBytes(encrypted_message_byte.length));
 
                     output_message.write(encrypted_message_byte);
@@ -194,17 +197,15 @@ public class Client {
             }
             int finalMsg = serverInput.read();
             if (finalMsg == SUCCESS) System.out.println("File transferred successfully");
-            System.out.println("------------session end");
+            System.out.println("------------session ends\n");
         }catch (Exception e){
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             output_message.write("Bye".getBytes());
-            output_message.flush();
         }
         serverInput.close();
         output_message.close();
         echoSocket.close();
         input_message.close();
-        stdIn.close();
     }
 
     private static long bytesToLong(byte[] bytes, int size){

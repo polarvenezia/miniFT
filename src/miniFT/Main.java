@@ -50,10 +50,11 @@ public class Main extends Application {
         Scene scene = new Scene(border, 550, 450);
         primaryStage.setScene(scene);
         primaryStage.show();
-
-
     }
 
+    public void log(String msg){
+        logstatus.appendText(msg);
+    }
 
     public static void main(String[] args) {
         launch(args);
@@ -146,8 +147,8 @@ public class Main extends Application {
                     }
                     logstatus.appendText("Sending file to "+serverAddress+" ... \n");
                     try {
-                        Runnable my_client_runnable = new MyThread(serverAddress );
-                        new Thread(my_client_runnable).run();
+                        Thread my_client_runnable = new MyThread(serverAddress );
+                        my_client_runnable.start();
                     }catch (Exception e){
                         logstatus.appendText(e.getMessage());
                     }
@@ -313,7 +314,7 @@ public class Main extends Application {
     }
 
 
-    public class MyThread implements Runnable {
+    public class MyThread extends Thread {
         String serverAddress;
         public MyThread(String address) {
             serverAddress = address;
